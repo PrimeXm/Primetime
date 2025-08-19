@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primetime</title>
+    <!-- Brand-aligned fonts (adjust if Shoolini site uses different families) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+                body {
+                        margin: 0;
+                        /* Warm vignette background matching panels (deep plum -> subtle amber glow) */
+                        background:
+                            radial-gradient(circle at 70% 35%, rgba(255,179,71,0.12), transparent 55%),
+                            radial-gradient(circle at 30% 70%, rgba(255,46,116,0.10), transparent 60%),
+                            linear-gradient(140deg, #1a0612 0%, #0d0714 55%, #150308 100%);
+                        background-attachment: fixed;
+                        color: #fff;
+                        overflow: hidden;
+                }
+    :root { --panel-width:420px; --panel-height:520px; --glow-pink:#ff2e74; --glow-amber:#ffb347; --glow-bg-deep:#12000a; --font-display:'Montserrat','Poppins',system-ui,sans-serif; --font-body:'Poppins',system-ui,sans-serif; }
+    /* Top center site header */
+    #siteHeader { position:fixed; top:30px; left:50%; transform:translateX(-50%) translateZ(-1000px) scale(.9) rotateX(7deg); z-index:70; text-align:center; pointer-events:none; font-family:var(--font-display); line-height:1.1; opacity:0; filter:blur(18px) brightness(.78); transition:opacity .75s ease, filter .9s ease, transform 1.05s cubic-bezier(.22,.82,.26,1); }
+    body.panels-show #siteHeader { opacity:1; filter:blur(0) brightness(1); transform:translateX(-50%) translateZ(0) scale(1) rotateX(0deg); }
+    #siteHeader .titleMain { font-size:56px; font-weight:600; letter-spacing:2.5px; text-transform:uppercase; background:linear-gradient(90deg,#ffb347 0%,#ff2e74 55%,#ffb347 100%); -webkit-background-clip:text; background-clip:text; color:transparent; position:relative; filter:drop-shadow(0 0 10px rgba(255,120,60,0.35)) drop-shadow(0 0 18px rgba(255,46,116,0.25)); }
+    /* Skeleton / outlined accent using stroke + layered shadow */
+    #siteHeader .titleMain::after { content:attr(data-text); position:absolute; inset:0; color:transparent; -webkit-text-stroke:2px rgba(255,190,140,0.45); filter:drop-shadow(0 0 4px rgba(255,179,71,0.65)); mix-blend-mode:overlay; }
+    #siteHeader .titleSub { margin-top:6px; font-size:15px; letter-spacing:3.5px; font-weight:500; text-transform:uppercase; color:#ffe1ca; opacity:.85; text-shadow:0 0 6px #ffb34755,0 0 10px #ff2e7433; }
+    /* header uses same transition reveal as panels; keyframe removed */
+        #analyticsPanel {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 120px;
+            width: var(--panel-width); /* unified width */
+            height: var(--panel-height); /* unified height */
+            padding: 42px 40px 46px; /* match impact panel */
+            box-sizing: border-box;
+            background:radial-gradient(circle at 70% 30%,rgba(255,46,116,0.15),rgba(0,0,0,0.55)) , linear-gradient(135deg,rgba(255,179,71,0.18),rgba(255,46,116,0.07));
+            border:1px solid rgba(255,179,71,0.38);
+            border-radius:20px;
+            font-family: var(--font-body);
+            font-size:15px;
+            line-height:1.4em;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
+            overflow:hidden; /* hide spill */
+            backdrop-filter:blur(18px) saturate(160%);
+            -webkit-backdrop-filter:blur(18px) saturate(160%);
+            box-shadow:0 6px 26px -4px rgba(255,120,40,0.35),0 0 0 1px rgba(255,179,71,0.25) inset;
+            z-index:50;
+            pointer-events:auto;
+            transition:box-shadow .35s ease,border-color .35s ease;
+        }
+        #analyticsPanel:hover { box-shadow:0 8px 34px -4px rgba(255,120,40,0.5),0 0 0 1px rgba(255,179,71,0.4) inset; }
+        #analyticsPanel h2 {
+            margin:0;
+            font-size:34px; /* mirror impactTitle scale for symmetry */
+            line-height:1.05em;
+            letter-spacing:.5px;
+            font-weight:600;
+            background:linear-gradient(90deg,#ffb347,#ff2e74 60%,#ffb347);
+            -webkit-background-clip:text;
+            background-clip:text;
+            color:transparent;
+            filter:drop-shadow(0 0 6px rgba(255,140,70,0.65));
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+    /* Removed decorative dot before heading */
+        @media (max-width: 1100px) {
+            #analyticsPanel { left: 120px; width: 360px; padding: 28px 30px 32px 30px; font-size:14px; }
+        }
+        @media (max-width: 900px) {
+            #analyticsPanel { left: 90px; width: 300px; padding: 24px 26px 28px; font-size:13px; }
+        }
+        @media (max-width: 700px) {
+            #analyticsPanel { left: 50%; transform: translate(-50%, -50%); width: 85vw; }
+        }
+        #analyticsPanel .metricsGrid {
+            display:grid;
+            grid-template-columns:1fr auto;
+            row-gap:8px;
+            column-gap:10px;
+            padding:14px 16px 12px;
+            background:linear-gradient(135deg,rgba(80,25,10,0.55),rgba(60,15,25,0.25));
+            border:1px solid rgba(255,179,71,0.25);
+            border-radius:14px;
+            position:relative;
+            overflow:hidden;
+        }
+        #analyticsPanel .metricsGrid:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 80% 25%,rgba(255,179,71,0.25),transparent 65%); pointer-events:none; }
+        #analyticsPanel .metricsGrid .labelTxt { color:#ffcb9a; font-weight:500; letter-spacing:.45px; }
+        #analyticsPanel .metricsGrid .value { color:#ffffff; font-weight:600; font-variant-numeric:tabular-nums; text-shadow:0 0 6px #ffb34755; }
+        #analyticsPanel .footerNote { color:#ffcb9a; font-size:11px; line-height:1.35em; opacity:.9; }
+        #analyticsPanel .divider { height:1px; background:linear-gradient(90deg,transparent,#ffb34755,transparent); margin:2px 0 4px; }
+    /* Right side impact panel */
+    #impactPanel { position:fixed; top:50%; right:110px; transform:translateY(-50%); width:var(--panel-width); height:var(--panel-height); padding:42px 40px 46px; box-sizing:border-box; font-family:var(--font-body); background:radial-gradient(circle at 70% 30%,rgba(255,46,116,0.15),rgba(0,0,0,0.55)) , linear-gradient(135deg,rgba(255,179,71,0.18),rgba(255,46,116,0.07)); border:1px solid rgba(255,179,71,0.38); border-radius:20px; backdrop-filter:blur(18px) saturate(160%); -webkit-backdrop-filter:blur(18px) saturate(160%); box-shadow:0 6px 26px -4px rgba(255,120,40,0.35),0 0 0 1px rgba(255,179,71,0.25) inset; color:#fff; display:flex; flex-direction:column; gap:14px; z-index:40; pointer-events:none; overflow:hidden; }
+    /* Panels start hidden & behind; faster reveal synced to end of zoom (before full recenter) */
+    #analyticsPanel, #impactPanel { opacity:0; filter:blur(18px) brightness(.78); transform:translateY(-50%) translateZ(-1000px) scale(.9) rotateX(7deg); transition:opacity .75s ease, filter .9s ease, transform 1.05s cubic-bezier(.22,.82,.26,1); }
+    body.panels-show #analyticsPanel, body.panels-show #impactPanel { opacity:1; filter:blur(0) brightness(1); transform:translateY(-50%) translateZ(0) scale(1); pointer-events:auto; }
+    body.panels-show #impactPanel { transition-delay:.08s, .08s, .08s; }
+    body.panels-show #analyticsPanel { transition-delay:0s,0s,0s; }
+    /* Footer credit */
+    #siteCredit { position:fixed; bottom:14px; right:24px; font-size:12px; letter-spacing:2px; font-weight:500; text-transform:uppercase; font-family:var(--font-body); background:linear-gradient(90deg,#ffb347,#ff2e74 60%,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent; opacity:0; filter:blur(8px); transition:opacity .9s ease .2s, filter 1.2s ease .2s; pointer-events:none; }
+    body.panels-show #siteCredit { opacity:.75; filter:blur(0); }
+    #siteCredit strong { font-weight:600; }
+    #impactPanel:hover { box-shadow:0 8px 34px -4px rgba(255,120,40,0.5),0 0 0 1px rgba(255,179,71,0.4) inset; }
+    .impactTitle { margin:0; font-size:40px; line-height:1.05em; letter-spacing:.5px; font-weight:600; font-family:var(--font-display); background:linear-gradient(90deg,#ffb347,#ff2e74 60%,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 6px rgba(255,140,70,0.65)); }
+    .impactLine { margin:0; font-size:18px; line-height:1.35em; font-weight:400; color:#ffe8d5; letter-spacing:.4px; }
+    .impactLine strong { color:#ffffff; font-weight:600; text-shadow:0 0 6px #ffb347aa; }
+    .impactStats { display:flex; gap:26px; margin-top:4px; }
+    .impactStatBlock { display:flex; flex-direction:column; }
+    .impactStatValue { font-size:34px; font-weight:600; line-height:1; font-family:var(--font-display); background:linear-gradient(90deg,#ffffff,#ffd4a4); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 0 10px #ffb34755; }
+    .impactStatLabel { font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:#ffcb9a; font-weight:600; }
+    .impactSmall { margin:6px 0 0; font-size:13px; line-height:1.35em; color:#ffddc2cc; letter-spacing:.3px; }
+    .impactGlow { position:absolute; inset:-2px; background:radial-gradient(circle at 65% 35%,rgba(255,179,71,0.32),transparent 70%); pointer-events:none; border-radius:inherit; mix-blend-mode:color-dodge; opacity:.75; }
+    @media (max-width:1400px){ :root { --panel-width:360px; --panel-height:480px; } #impactPanel { right:60px; padding:34px 32px 38px; } #analyticsPanel { left:90px; padding:34px 32px 38px; } .impactTitle{font-size:34px;} .impactStatValue{font-size:30px;} }
+    @media (max-width:1100px){ #impactPanel { display:none; } }
+    /* Companies list UI (warm theme aligned with panels) */
+    #companyBox { margin-top:6px; padding:14px 16px 12px; background:linear-gradient(135deg,rgba(80,25,10,0.55),rgba(60,15,25,0.25)); border:1px solid rgba(255,179,71,0.28); border-radius:14px; max-height:176px; overflow:auto; backdrop-filter:blur(10px) saturate(170%); -webkit-backdrop-filter:blur(10px) saturate(170%); box-shadow:0 0 0 1px rgba(255,179,71,0.08) inset,0 4px 14px -2px rgba(255,120,40,0.25); }
+    #companyBox::-webkit-scrollbar { width:7px; }
+    #companyBox::-webkit-scrollbar-track { background:linear-gradient(180deg,rgba(60,15,25,0.25),rgba(40,10,15,0.15)); border-radius:10px; }
+    #companyBox::-webkit-scrollbar-thumb { background:linear-gradient(180deg,#ffb347aa,#ff2e7499); border-radius:10px; border:1px solid rgba(255,255,255,0.18); }
+    .companyTitle { font-size:12px; font-weight:600; letter-spacing:.85px; color:#ffcb9a; margin:0 0 10px; text-transform:uppercase; display:flex; align-items:center; gap:8px; font-family:var(--font-display); background:linear-gradient(90deg,#ffb347,#ff2e74 65%,#ffb347); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 4px rgba(255,140,70,0.55)); }
+    .companyTitle:before { content:""; width:7px; height:7px; background:linear-gradient(135deg,#ffb347,#ff2e74); border-radius:50%; box-shadow:0 0 10px #ffb347aa,0 0 16px #ff2e7488; }
+    #companyList { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px; }
+    #companyList li { font-size:13px; line-height:1.25em; color:#ffeedd; background:linear-gradient(90deg,rgba(255,179,71,0.16),rgba(255,46,116,0.10)); padding:6px 10px 6px 12px; border-radius:7px; border:1px solid rgba(255,179,71,0.28); display:flex; align-items:center; gap:8px; position:relative; letter-spacing:.3px; transition:background .25s ease,border-color .25s ease,box-shadow .25s ease; }
+    #companyList li:before { content:""; width:6px; height:6px; background:linear-gradient(135deg,#ff2e74,#ffb347); border-radius:50%; box-shadow:0 0 6px #ff2e74aa,0 0 10px #ffb34766; flex:0 0 auto; }
+    #companyList li:hover { background:linear-gradient(90deg,rgba(255,179,71,0.32),rgba(255,46,116,0.22)); border-color:#ffb347; box-shadow:0 0 0 1px #ffb34755,0 0 10px -1px #ff8c4677; }
+    #companyList li.highlight { background:linear-gradient(90deg,rgba(255,46,116,0.42),rgba(255,179,71,0.30)); border-color:#ff2e74cc; box-shadow:0 0 0 1px #ff2e74aa,0 0 14px 2px #ff2e7433; }
+    /* Globe theming adjustments to match panel warm palette */
+    .label { /* override earlier cyan styling */
+        background: rgba(30,0,12,0.85);
+        border:1.5px solid var(--glow-amber);
+        box-shadow:0 0 8px rgba(255,179,71,0.65),0 0 18px -2px rgba(255,46,116,0.55);
+        text-shadow:0 2px 8px #000,0 0 4px rgba(255,120,60,0.6);
+    }
+    .label.root { /* keep stronger root effect but align palette */
+        background:linear-gradient(135deg,#ff2e74dd,#ffb347dd);
+        border-color:#ffffff;
+        box-shadow:0 0 14px #ff2e74,0 0 30px #ffb34766;
+        text-shadow:0 0 4px #ff2e74,0 0 12px #ffb347;
+    }
+        .label {
+            color: #fff;
+            font-family: var(--font-body);
+            padding: 6px 14px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            pointer-events: auto; /* allow hover/click */
+            transform: translate(-50%, -120%);
+            z-index: 10;
+            text-shadow: 0 2px 8px #000, 0 0 2px #00ffff;
+            border: 1.5px solid #00ffff;
+            box-shadow: 0 0 8px #00ffff88;
+        }
+        .label.root {
+            background: linear-gradient(135deg,#ff2e74dd,#ffb347dd);
+            border-color: #ffffff;
+            box-shadow: 0 0 12px #ff2e74, 0 0 26px #ffc15e66;
+            text-shadow: 0 0 4px #ff2e74, 0 0 12px #ffbc5e;
+        }
+    </style>
+</head>
+<body>
+    <div id="siteHeader">
+        <div class="titleMain" data-text="ALUMNI TRAILS">ALUMNI TRAILS</div>
+        <div class="titleSub">GLOBAL CONNECTIONS NETWORK</div>
+    </div>
+    <div id="siteCredit">Designed by <strong>MJS</strong></div>
+    <div id="analyticsPanel">
+    <h2>Statistics</h2>
+        <div class="divider"></div>
+        <div class="metricsGrid">
+            <span class="labelTxt">Locations</span><span class="value" id="mTotal">--</span>
+            <span class="labelTxt">Total Alumni</span><span class="value" id="mAlumni">--</span>
+            <span class="labelTxt">Hovered</span><span class="value" id="mHover">-</span>
+            <span class="labelTxt">Selected</span><span class="value" id="mSelected">-</span>
+        </div>
+        <div id="companyBox">
+            <h3 class="companyTitle">Companies</h3>
+            <ul id="companyList"></ul>
+        </div>
+    <!-- Footer note removed per request -->
+    </div>
+    <div id="impactPanel">
+        <div class="impactGlow"></div>
+        <h1 class="impactTitle">Shoolini Alumni<br/>Everywhere</h1>
+        <div class="impactStats">
+            <div class="impactStatBlock">
+                <span class="impactStatValue" id="statAlumni">--</span>
+                <span class="impactStatLabel">Alumni</span>
+            </div>
+            <div class="impactStatBlock">
+                <span class="impactStatValue" id="statLocations">--</span>
+                <span class="impactStatLabel">Global Hubs</span>
+            </div>
+        </div>
+        <p class="impactLine">Our graduates spark innovation across continents, turning ideas into impact.</p>
+        <p class="impactLine">From the Himalayan campus to strategic tech & finance centres, their journeys trace the arcs you see.</p>
+        <p class="impactSmall">Each glowing trail represents a living connection back to Shoolini University.</p>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+
+    <script type="module">
+        // --- DATA EMBEDDED DIRECTLY IN THE SCRIPT ---
+        // A small subset of capital cities data to keep the file size reasonable.
+        // Focused list: primary global job / alumni hubs only
+        const capitalsData = [
+            {city:"New Delhi",country:"India",lat:"28.6139",lon:"77.2090",alumni:820,companies:["TCS","Infosys","Accenture","Deloitte","Amazon"]},
+            {city:"Chandigarh",country:"India",lat:"30.7333",lon:"76.7794",alumni:640,companies:["Tech Mahindra","Infosys","Wipro","Trident","Cognizant"]},
+            {city:"Mumbai",country:"India",lat:"19.0760",lon:"72.8777",alumni:950,companies:["Reliance","TCS","JPMorgan","Morgan Stanley","L&T"]},
+            {city:"Bengaluru",country:"India",lat:"12.9716",lon:"77.5946",alumni:1100,companies:["Infosys","Wipro","Flipkart","SAP Labs","Google"]},
+            {city:"Hyderabad",country:"India",lat:"17.3850",lon:"78.4867",alumni:780,companies:["Microsoft","Amazon","Google","Accenture","Infosys"]},
+            {city:"Pune",country:"India",lat:"18.5204",lon:"73.8567",alumni:560,companies:["TCS","Cognizant","Accenture","Persistent","Tech Mahindra"]},
+            {city:"Dubai",country:"UAE",lat:"25.2048",lon:"55.2708",alumni:300,companies:["Emirates","DP World","Emaar","HSBC","EY"]},
+            {city:"Abu Dhabi",country:"UAE",lat:"24.4539",lon:"54.3773",alumni:65,companies:["ADNOC","Mubadala","Etihad","First Abu Dhabi Bank"]},
+            {city:"Doha",country:"Qatar",lat:"25.2854",lon:"51.5310",alumni:70,companies:["Qatar Airways","QatarEnergy","Ooredoo"]},
+            {city:"Singapore",country:"Singapore",lat:"1.3521",lon:"103.8198",alumni:175,companies:["Grab","DBS","Shopee","Google","Accenture"]},
+            {city:"London",country:"United Kingdom",lat:"51.5074",lon:"-0.1278",alumni:220,companies:["Barclays","HSBC","PwC","KPMG","Amazon"]},
+            {city:"Berlin",country:"Germany",lat:"52.5200",lon:"13.4050",alumni:95,companies:["Siemens","N26","Zalando","Delivery Hero"]},
+            {city:"Paris",country:"France",lat:"48.8566",lon:"2.3522",alumni:105,companies:["BNP Paribas","LVMH","Capgemini","Airbus"]},
+            {city:"Toronto",country:"Canada",lat:"43.6511",lon:"-79.3470",alumni:190,companies:["RBC","TD Bank","Shopify","Amazon","Deloitte"]},
+            {city:"Vancouver",country:"Canada",lat:"49.2827",lon:"-123.1207",alumni:120,companies:["Amazon","Microsoft","Lululemon","SAP"]},
+            {city:"New York",country:"USA",lat:"40.7128",lon:"-74.0060",alumni:260,companies:["Google","JPMorgan","Goldman Sachs","IBM","Meta"]},
+            {city:"San Francisco",country:"USA",lat:"37.7749",lon:"-122.4194",alumni:210,companies:["Google","Apple","Salesforce","Uber","OpenAI"]},
+            {city:"Sydney",country:"Australia",lat:"-33.8688",lon:"151.2093",alumni:140,companies:["Atlassian","Commonwealth Bank","Macquarie","EY"]},
+            {city:"Melbourne",country:"Australia",lat:"-37.8136",lon:"144.9631",alumni:130,companies:["ANZ","NAB","PwC","Telstra"]},
+            {city:"Tokyo",country:"Japan",lat:"35.6895",lon:"139.6917",alumni:160,companies:["Sony","Toyota","SoftBank","Rakuten"]},
+            {city:"Seoul",country:"South Korea",lat:"37.5665",lon:"126.9780",alumni:85,companies:["Samsung","LG","Hyundai","Kakao"]},
+            {city:"Beijing",country:"China",lat:"39.9042",lon:"116.4074",alumni:90,companies:["Baidu","ByteDance","JD.com"]},
+            {city:"Shanghai",country:"China",lat:"31.2304",lon:"121.4737",alumni:75,companies:["Alibaba","Tesla","PwC"]},
+            {city:"Johannesburg",country:"South Africa",lat:"-26.2041",lon:"28.0473",alumni:60,companies:["Standard Bank","ABSA","Naspers"]},
+            {city:"Nairobi",country:"Kenya",lat:"-1.2921",lon:"36.8219",alumni:55,companies:["Safaricom","Equity Bank","IBM"]},
+            {city:"Mexico City",country:"Mexico",lat:"19.4326",lon:"-99.1332",alumni:150,companies:["BBVA","CitiBanamex","Amazon"]},
+            {city:"Santiago",country:"Chile",lat:"-33.4489",lon:"-70.6693",alumni:95,companies:["LATAM","Falabella","Banco de Chile"]},
+            {city:"Lagos",country:"Nigeria",lat:"6.5244",lon:"3.3792",alumni:80,companies:["MTN","Access Bank","Andela"]},
+            {city:"Cairo",country:"Egypt",lat:"30.0444",lon:"31.2357",alumni:70,companies:["Vodafone","Orange","Etisalat"]},
+            {city:"Reykjavik",country:"Iceland",lat:"64.1466",lon:"-21.9426",alumni:25,companies:["CCP Games","Icelandair"]},
+            {city:"Wellington",country:"New Zealand",lat:"-41.2865",lon:"174.7762",alumni:50,companies:["Xero","Weta Digital"]}
+        ];
+        
+        // --- SCENE SETUP ---
+    let scene, camera, renderer, labelRenderer, controls;
+        let raycaster, mouse;
+        let capitalMarkers = [];
+    let hoveredCapital = null; // also set when hovering label DOM
+    let lastSelectedCapital = null; // for selection display
+    const trails = []; // animated trail objects {points, baseLine, glowLine, headLine, headSegments, startTime, duration}
+    let rootMarker = null; // distinct Shoolini University root marker
+    let initialViewSet = false; // ensure we center on root only once
+    let introAnimating = false, introStartTime = 0;
+    let introRecentering = false, introRecenterStart = 0, introRootTarget = null;
+    let panelsRevealed = false; // show panels only after main zoom (earlier sync)
+        const globeRadius = 10;
+    // Analytics references
+    let metricTotal, metricAlumni, metricHover, metricSelected;
+    let lastFpsTime = performance.now();
+    let frameCount = 0;
+    let companyListEl, companyTitleEl; // companies list elements
+
+        function latLonToVector3(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            const theta = (lon + 180) * (Math.PI / 180);
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 20;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // alpha so body gradient shows
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x000000, 0); // fully transparent clear
+            // Attach WebGL canvas first
+            document.body.appendChild(renderer.domElement);
+
+            labelRenderer = new THREE.CSS2DRenderer();
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.domElement.style.position = 'absolute';
+            labelRenderer.domElement.style.top = '0px';
+            labelRenderer.domElement.style.left = '0px';
+            labelRenderer.domElement.style.pointerEvents = 'none';
+            labelRenderer.domElement.style.zIndex = '10';
+            // Attach label renderer after WebGL canvas so it overlays
+            document.body.appendChild(labelRenderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.3;
+            controls.minDistance = 12;
+            controls.maxDistance = 40;
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            createDotGlobe();
+            loadBorders(); // This will now use an external fetch
+            createCapitals(); // This now uses the embedded data
+
+            createRootNode(); // add Shoolini University root node
+
+            createStarsBackground();
+
+            // After a short delay (ensure root + capitals exist), auto-generate trails from root to non-zero alumni cities
+            setTimeout(()=>{
+                if(rootMarker){
+                    capitalMarkers.forEach(m => {
+                        if(m !== rootMarker && typeof m.userData.alumni === 'number' && m.userData.alumni > 0){
+                            createTrailBetween(rootMarker, m);
+                        }
+                    });
+                    lastSelectedCapital = rootMarker;
+                    if(metricSelected) metricSelected.textContent = rootMarker.userData.name;
+                }
+            }, 400);
+
+            // Metrics DOM elements
+            metricTotal = document.getElementById('mTotal');
+            metricAlumni = document.getElementById('mAlumni');
+            metricHover = document.getElementById('mHover');
+            metricSelected = document.getElementById('mSelected');
+            const totalAlumni = capitalsData.reduce((s,c)=>s+(c.alumni||0),0);
+            if (metricTotal) metricTotal.textContent = capitalsData.length.toString();
+            if (metricAlumni) metricAlumni.textContent = totalAlumni.toString();
+            // populate impact panel stats
+            const statAlumni = document.getElementById('statAlumni');
+            const statLocations = document.getElementById('statLocations');
+            if(statAlumni) statAlumni.textContent = totalAlumni.toLocaleString();
+            if(statLocations) statLocations.textContent = capitalsData.length.toString();
+            companyListEl = document.getElementById('companyList');
+            companyTitleEl = document.querySelector('.companyTitle');
+            // Populate initial top companies list before any city click
+            showTopCompanies();
+        // Adds a background of stars to the scene
+        function createStarsBackground() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starCount = 2000;
+            const starVertices = [];
+            for (let i = 0; i < starCount; i++) {
+                const r = 200 + Math.random() * 100;
+                const theta = Math.random() * 2 * Math.PI;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
+                starVertices.push(x, y, z);
+            }
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffcfa0, size: 0.75, transparent: true, opacity: 0.85 });
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onMarkerClick);
+            // trails now auto generated
+        }
+
+    // company selection & listing
+    function onMarkerClick(){
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(capitalMarkers);
+        if(intersects.length===0){
+            // Clicked empty space: show global top companies again
+            lastSelectedCapital = null;
+            if(metricSelected) metricSelected.textContent = '-';
+            showTopCompanies();
+            return;
+        }
+        const sel = intersects[0].object;
+        lastSelectedCapital = sel;
+        if(metricSelected) metricSelected.textContent = sel.userData.name;
+        updateCompanies(sel.userData.companies || []);
+    }
+    function updateCompanies(list){
+        if(!companyListEl) return;
+        companyListEl.innerHTML='';
+        if(!list || list.length===0){
+            const li=document.createElement('li');
+            li.textContent='No company data';
+            companyListEl.appendChild(li);
+            return;
+        }
+        list.slice(0,14).forEach((c,i)=>{
+            const li=document.createElement('li');
+            li.textContent=c;
+            if(i<2) li.classList.add('highlight');
+            companyListEl.appendChild(li);
+        });
+        if(companyTitleEl) companyTitleEl.textContent = 'Companies';
+    }
+
+    function showTopCompanies(){
+        if(!companyListEl) return;
+        // Aggregate company frequency across all capitals
+        const freq = new Map();
+        capitalsData.forEach(c => {
+            (c.companies || []).forEach(comp => {
+                freq.set(comp, (freq.get(comp) || 0) + 1);
+            });
+        });
+        const top = Array.from(freq.entries())
+            .sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]))
+            .slice(0,14)
+            .map(e=> e[0]);
+        companyListEl.innerHTML='';
+        top.forEach((name,i)=>{
+            const li=document.createElement('li');
+            li.textContent = name;
+            if(i<3) li.classList.add('highlight');
+            companyListEl.appendChild(li);
+        });
+        if(companyTitleEl) companyTitleEl.textContent = 'Top Companies';
+    }
+
+    // Shoolini theme colors
+    const TRAIL_BASE_COLOR = new THREE.Color(0xff2e74); // primary pink
+    const TRAIL_TIP_COLOR = new THREE.Color(0xffb347);  // warm accent
+
+    function createTrailBetween(a, b){
+            const aPos = a.getWorldPosition(new THREE.Vector3()).clone().normalize();
+            const bPos = b.getWorldPosition(new THREE.Vector3()).clone().normalize();
+            const segments = 120;
+            const arcPoints = [];
+            for(let i=0;i<=segments;i++){
+                const t = i/segments;
+                let omega = Math.acos(THREE.MathUtils.clamp(aPos.dot(bPos), -1, 1));
+                if(omega === 0){
+                    arcPoints.push(aPos.clone().multiplyScalar(globeRadius+0.15));
+                    continue;
+                }
+                const sinOmega = Math.sin(omega);
+                const s1 = Math.sin((1-t)*omega)/sinOmega;
+                const s2 = Math.sin(t*omega)/sinOmega;
+                const p = aPos.clone().multiplyScalar(s1).add(bPos.clone().multiplyScalar(s2)).normalize();
+                const heightBoost = 0.18 + 0.38 * Math.sin(Math.PI * t) ** 1.15;
+                arcPoints.push(p.multiplyScalar(globeRadius + heightBoost));
+            }
+            // Base faint arc
+            const baseGeo = new THREE.BufferGeometry().setFromPoints(arcPoints);
+            const baseMat = new THREE.LineBasicMaterial({ color: TRAIL_BASE_COLOR, transparent:true, opacity:0.34 });
+            const baseLine = new THREE.Line(baseGeo, baseMat);
+            baseLine.geometry.setDrawRange(0, 0);
+            scene.add(baseLine);
+
+            // Glow duplicate for stronger visibility
+            const glowGeo = baseGeo.clone();
+            const glowMat = new THREE.LineBasicMaterial({ color: TRAIL_TIP_COLOR, transparent:true, opacity:0.75, blending: THREE.AdditiveBlending });
+            glowMat.depthWrite = false;
+            const glowLine = new THREE.Line(glowGeo, glowMat);
+            glowLine.geometry.setDrawRange(0, 0);
+            scene.add(glowLine);
+
+            // Outer softer halo (second additive layer) for perceived glow (still no bloom)
+            const outerGlowMat = new THREE.LineBasicMaterial({ color: 0xffe2aa, transparent:true, opacity:0.32, blending: THREE.AdditiveBlending });
+            outerGlowMat.depthWrite = false;
+            const outerGlowLine = new THREE.Line(baseGeo.clone(), outerGlowMat);
+            outerGlowLine.geometry.setDrawRange(0, 0);
+            scene.add(outerGlowLine);
+
+            // Wide halo (scaled outward slightly) for extra strength
+            const widenedPoints = arcPoints.map(p=>p.clone().multiplyScalar(1.012));
+            const wideGlowGeo = new THREE.BufferGeometry().setFromPoints(widenedPoints);
+            const wideGlowMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.18, blending: THREE.AdditiveBlending });
+            wideGlowMat.depthWrite = false;
+            const wideGlowLine = new THREE.Line(wideGlowGeo, wideGlowMat);
+            wideGlowLine.geometry.setDrawRange(0, 0);
+            scene.add(wideGlowLine);
+
+            // Dynamic head trail (re-uses fixed buffer updated each frame)
+            const headSegments = 40;
+            const headPositions = new Float32Array(headSegments * 3);
+            const headGeo = new THREE.BufferGeometry();
+            headGeo.setAttribute('position', new THREE.BufferAttribute(headPositions, 3));
+            headGeo.setDrawRange(0, 0);
+            // Add color attribute for gradient
+            const headColors = new Float32Array(headSegments * 3);
+            headGeo.setAttribute('color', new THREE.BufferAttribute(headColors, 3));
+            const headMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent:true, opacity:1, blending: THREE.AdditiveBlending });
+            headMat.depthWrite = false;
+            const headLine = new THREE.Line(headGeo, headMat);
+            scene.add(headLine);
+
+            // Typewriter cycle config
+            const totalPoints = arcPoints.length;
+            const cycleDuration = 6500 + Math.random()*1500; // ms
+            const writeFrac = 0.58; // portion of cycle writing
+            const holdFrac = 0.07;  // full visible hold
+            const fadeFrac = 0.25;  // fade out
+            const startTime = performance.now() + Math.random()*1200;
+            trails.push({ points: arcPoints, totalPoints, baseLine, glowLine, outerGlowLine, wideGlowLine, headLine, headSegments, startTime, cycleDuration, writeFrac, holdFrac, fadeFrac });
+        }
+
+        function createDotGlobe() {
+            const vertices = [];
+            const density = 20000;
+            for (let i = 0; i < density; i++) {
+                const theta = Math.PI * 2 * Math.random();
+                const phi = Math.acos(2 * Math.random() - 1);
+                vertices.push(
+                    globeRadius * Math.sin(phi) * Math.cos(theta),
+                    globeRadius * Math.sin(phi) * Math.sin(theta),
+                    globeRadius * Math.cos(phi)
+                );
+            }
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            const material = new THREE.PointsMaterial({ color: 0xff2e74, size: 0.022, transparent: true, opacity: 0.55 });
+            scene.add(new THREE.Points(geometry, material));
+        }
+        
+        function loadBorders() {
+            // Fetching from a public URL avoids local file issues entirely.
+            fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+                .then(res => res.json())
+                .then(data => {
+                    // Brighter cyan color, thicker line, still slightly transparent
+                    const material = new THREE.LineBasicMaterial({ color: 0xffb347, linewidth: 2, transparent: true, opacity: 0.85 });
+                    data.features.forEach(feature => {
+                        const polygons = feature.geometry.type === 'Polygon' ? [feature.geometry.coordinates] : feature.geometry.coordinates;
+                        polygons.forEach(polygon => {
+                            const points = [];
+                            polygon[0].forEach(coord => {
+                                points.push(latLonToVector3(coord[1], coord[0], globeRadius + 0.01)); // Slightly above globe surface
+                            });
+                            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                            scene.add(new THREE.Line(geometry, material));
+                        });
+                    });
+                }).catch(err => console.error("Could not load country borders:", err));
+        }
+
+    function createCapitals() {
+                const baseGeometry = new THREE.SphereGeometry(0.06, 14, 14);
+
+            capitalsData.forEach(capital => {
+                const lat = parseFloat(capital.lat);
+                const lon = parseFloat(capital.lon);
+                if (isNaN(lat) || isNaN(lon)) return;
+
+                // World position of capital on globe surface
+                const worldPos = latLonToVector3(lat, lon, globeRadius);
+                const count = capital.alumni || Math.floor(50 + Math.random()*150);
+                // Color scale turquoise -> cyan -> soft yellow
+                const colorScale = (val)=>{
+                    const t = THREE.MathUtils.clamp(val/1100,0,1);
+                    const base = new THREE.Color(0xff2e74); // pink
+                    const mid = new THREE.Color(0xff6f5a);  // warm transition
+                    const end = new THREE.Color(0xffb347);  // amber
+                    const mBlend = base.clone().lerp(mid, Math.min(1,t*1.1));
+                    return mBlend.lerp(end, Math.max(0,(t-0.45)/0.55));
+                };
+                // Outer alumni sphere (now semi-transparent so white capital point shows)
+                const markerMaterial = new THREE.MeshBasicMaterial({ color: colorScale(count), transparent:true, opacity:0.55 });
+                const sizeScale = THREE.MathUtils.clamp(Math.sqrt(count)/35, 0.28, 1.5);
+                const marker = new THREE.Mesh(baseGeometry.clone(), markerMaterial);
+                marker.scale.setScalar(sizeScale);
+                marker.position.copy(worldPos);
+
+                // Create label object (local space). We'll offset slightly outward from globe.
+                const outward = worldPos.clone().normalize();
+                const labelOffset = 0.8; // distance from marker center
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'label';
+                labelDiv.textContent = `${capital.city} (${count})`;
+                const label = new THREE.CSS2DObject(labelDiv);
+                label.position.copy(outward.multiplyScalar(labelOffset)); // local relative to marker
+                label.visible = false;
+
+                // Pointer from marker to label (local coordinates)
+                const pointerGeometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, 0, 0),
+                    label.position.clone()
+                ]);
+                const pointerMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+                const pointer = new THREE.Line(pointerGeometry, pointerMaterial);
+                pointer.visible = false;
+
+                // White capital point (precise pinpoint) sits at actual surface location
+                const coreSize = 0.09 + 0.025 * Math.min(sizeScale,1); // slight growth with alumni
+                const whiteCoreGeo = new THREE.SphereGeometry(coreSize, 20, 20);
+                const whiteCoreMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const whiteCore = new THREE.Mesh(whiteCoreGeo, whiteCoreMat);
+                // Nudge outer colored sphere slightly outward so white core is visually distinct
+                const pushOut = 0.18 * Math.min(sizeScale,1.1);
+                marker.position.copy(worldPos.clone().add(outward.clone().multiplyScalar(0))); // base position (unchanged for core)
+                // shift colored surface outward instead of the marker itself by wrapping in group would be heavier; instead move white core slightly inward
+                whiteCore.position.copy(outward.clone().multiplyScalar(-0.02));
+                // Add soft glow ring using a tiny additional translucent sphere
+                const glowCoreGeo = new THREE.SphereGeometry(coreSize*1.45, 20, 20);
+                const glowCoreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent:true, opacity:0.18 });
+                const glowCore = new THREE.Mesh(glowCoreGeo, glowCoreMat);
+                glowCore.position.copy(whiteCore.position);
+
+                // Add DOM hover/click handling for label
+                labelDiv.addEventListener('mouseenter', () => {
+                    hoveredCapital = marker;
+                    controls.autoRotate = false;
+                });
+                labelDiv.addEventListener('mouseleave', () => {
+                    if (hoveredCapital === marker) {
+                        hoveredCapital = null;
+                        controls.autoRotate = true;
+                    }
+                });
+                labelDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    lastSelectedCapital = marker;
+                    if(metricSelected) metricSelected.textContent = marker.userData.name;
+                    updateCompanies(marker.userData.companies || []);
+                });
+
+                marker.add(label, pointer, whiteCore, glowCore);
+                marker.userData = { name: capital.city, alumni: count, companies: capital.companies || [] };
+                scene.add(marker);
+                capitalMarkers.push(marker);
+            });
+        }
+
+        // ROOT NODE (Shoolini University) — persistent & visually central
+        function createRootNode(){
+            // Approximate coordinates for Shoolini University (Solan, Himachal Pradesh, India)
+            const lat = 30.9083;
+            const lon = 77.0969;
+            const worldPos = latLonToVector3(lat, lon, globeRadius);
+
+            // Core sphere
+            const coreGeo = new THREE.SphereGeometry(0.25, 28, 28);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0xff2e74 });
+            rootMarker = new THREE.Mesh(coreGeo, coreMat);
+            rootMarker.position.copy(worldPos);
+
+            // Halo / glow
+            const glowGeo = new THREE.SphereGeometry(0.38, 32, 32);
+            const glowMat = new THREE.MeshBasicMaterial({ color: 0xffc15e, transparent:true, opacity:0.35 });
+            const glow = new THREE.Mesh(glowGeo, glowMat);
+            rootMarker.add(glow);
+
+            // Label (always visible, even back side but dimmed)
+            const outward = worldPos.clone().normalize();
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'label root';
+            labelDiv.textContent = 'Shoolini University';
+            const label = new THREE.CSS2DObject(labelDiv);
+            label.position.copy(outward.clone().multiplyScalar(1.05));
+            label.visible = true;
+
+            // Pointer from marker to a point beneath the label (shorter for accuracy)
+            const pointerEnd = label.position.clone().multiplyScalar(0.6);
+            const pointerGeometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                pointerEnd
+            ]);
+            const pointerMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 });
+            const pointer = new THREE.Line(pointerGeometry, pointerMaterial);
+            pointer.visible = true; // Always show pointer for root
+
+            // DOM interactions like other markers
+            labelDiv.addEventListener('mouseenter', () => { hoveredCapital = rootMarker; controls.autoRotate = false; });
+            labelDiv.addEventListener('mouseleave', () => { if(hoveredCapital===rootMarker){ hoveredCapital=null; controls.autoRotate = true; } });
+            labelDiv.addEventListener('click', (e)=>{
+                e.stopPropagation();
+                lastSelectedCapital = rootMarker;
+                if(metricSelected) metricSelected.textContent = rootMarker.userData.name;
+                updateCompanies(rootMarker.userData.companies);
+            });
+
+            rootMarker.add(label);
+            rootMarker.userData = { name: 'Shoolini University', alumni: 'Root', companies:["Campus","Incubation Centre","Research Labs"] };
+            scene.add(rootMarker);
+            // Include in array so hover & trail logic works; pointer not required
+            capitalMarkers.push(rootMarker);
+
+            // Set initial camera focus on root (once)
+            if(!initialViewSet){
+                focusOnRoot();
+                initialViewSet = true;
+            }
+        }
+
+        function focusOnRoot(){
+            if(!rootMarker || !camera || !controls) return;
+            const dir = rootMarker.position.clone().normalize();
+            // Start farther then animate in
+            camera.position.copy(dir.clone().multiplyScalar(60));
+            controls.target.copy(rootMarker.position);
+            controls.update();
+            introAnimating = true;
+            introStartTime = performance.now();
+        }
+        
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(capitalMarkers);
+
+
+            let hovered = null;
+            if (intersects.length > 0) {
+                hovered = intersects[0].object;
+                controls.autoRotate = false;
+            } else if (hoveredCapital) { // preserve label-based hover
+                hovered = hoveredCapital;
+            } else {
+                controls.autoRotate = true;
+            }
+
+            const camDir = camera.getWorldDirection(new THREE.Vector3()).normalize(); // direction camera looks (from camera outward)
+
+    // Removed frontCount & visibleLabels metrics
+        capitalMarkers.forEach(marker => {
+                const markerWorldPos = marker.getWorldPosition(new THREE.Vector3());
+                const surfaceNormal = markerWorldPos.clone().normalize(); // outward from globe center
+                // Front hemisphere if camera is looking roughly toward the point: cameraDir dot normal should be negative.
+                const dot = camDir.dot(surfaceNormal); // front points => dot ~ -1, back => +1
+                const front = dot < -0.05; // small margin so horizon not noisy
+                const labelObj = marker.children[0];
+                const pointerObj = marker.children[1]; // may be undefined for root
+
+                if (front) {
+            // frontCount removed
+                    // fade near horizon: when dot -> -0.05 (edge) alpha -> 0; when dot <= -0.6 alpha ->1
+                    let alpha = ( -0.05 - dot ) / ( -0.05 + 0.6 ); // map dot in [-0.6,-0.05]
+                    alpha = Math.max(0, Math.min(1, alpha));
+                    if (marker === hovered) alpha = 1;
+                    labelObj.visible = true;
+                    if(pointerObj) pointerObj.visible = true;
+            // visibleLabels removed
+                    if (labelObj.element) {
+                        labelObj.element.style.opacity = alpha.toFixed(2);
+                        labelObj.element.style.borderColor = marker === hovered ? '#ffffff' : '#ffb347';
+                        labelObj.element.style.boxShadow = marker === hovered ? '0 0 12px #ffffff' : '0 0 10px #ffb34766';
+                        if(marker === rootMarker){
+                            // Root always fully visible on front
+                            labelObj.element.style.opacity = '1';
+                            labelObj.element.style.borderColor = '#ffffff';
+                            labelObj.element.style.boxShadow = '0 0 14px #ff2e74,0 0 30px #ffc15e55';
+                        }
+                    }
+                    if (pointerObj && pointerObj.material) {
+                        pointerObj.material.opacity = 0.25 + 0.75 * alpha;
+                        pointerObj.material.color.set(marker === hovered ? 0xffffff : 0xffb347);
+                        pointerObj.material.needsUpdate = true;
+                    }
+                } else {
+                    if(marker === rootMarker){
+                        // Keep root label visible when on far side but dim it
+                        labelObj.visible = true;
+                        if(labelObj.element){
+                            labelObj.element.style.opacity = '0.5';
+                            labelObj.element.style.borderColor = '#ffffff55';
+                            labelObj.element.style.boxShadow = '0 0 8px #ff2e74aa';
+                        }
+                        if(pointerObj) pointerObj.visible = false;
+                    } else {
+                        labelObj.visible = false;
+                        if(pointerObj) pointerObj.visible = false;
+                    }
+                }
+            });
+
+            // --- LABEL DECLUTTER (screen-space overlap suppression) ---
+            // Collect visible labels (exclude root for overlap suppression; root always shown)
+            const taken = [];
+            const rootLabelEl = rootMarker && rootMarker.children[0] && rootMarker.children[0].element;
+            capitalMarkers.forEach(marker => {
+                if(marker === rootMarker) return; // skip root
+                const labelObj = marker.children[0];
+                if(!labelObj || !labelObj.element) return;
+                const el = labelObj.element;
+                // Reset visibility each pass
+                if(!labelObj.visible || el.style.opacity === '0' || parseFloat(el.style.opacity) < 0.05){
+                    el.style.visibility = 'hidden';
+                    return;
+                }
+                // Measure box
+                const rect = el.getBoundingClientRect();
+                let overlaps = false;
+                for(const r of taken){
+                    if(!(rect.right < r.left || rect.left > r.right || rect.bottom < r.top || rect.top > r.bottom)){
+                        overlaps = true; break;
+                    }
+                }
+                if(overlaps){
+                    el.style.visibility = 'hidden';
+                } else {
+                    el.style.visibility = 'visible';
+                    taken.push(rect);
+                }
+            });
+            if(rootLabelEl){ rootLabelEl.style.visibility = 'visible'; }
+
+            // Subtle breathing animation for root marker (professional feel)
+            if(rootMarker){
+                const t = performance.now() * 0.0015; // slower
+                const targetScale = 1 + 0.055 * Math.sin(t*1.4); // small amplitude
+                // smooth toward target to remove any jitter
+                const current = rootMarker.scale.x;
+                const smoothed = THREE.MathUtils.lerp(current, targetScale, 0.12);
+                rootMarker.scale.setScalar(smoothed);
+                // Adjust glow (find larger radius child)
+                rootMarker.children.forEach(ch => {
+                    if(ch.isMesh && ch.geometry && ch.geometry.parameters && ch.geometry.parameters.radius > 0.3){
+                        const glowTarget = 1 + 0.10 * Math.sin(t*1.1 + 0.4);
+                        const glowSmoothed = THREE.MathUtils.lerp(ch.scale.x, glowTarget, 0.10);
+                        ch.scale.setScalar(glowSmoothed);
+                        if(ch.material){
+                            ch.material.opacity = 0.32; // steady opacity for calmer look
+                        }
+                    }
+                });
+            }
+
+            // Intro zoom animation
+            if(introAnimating && rootMarker){
+                const elapsed = performance.now() - introStartTime;
+                const durationIn = 2200; // ms
+                const total = durationIn + 700; // include settle phase
+                const dir = rootMarker.position.clone().normalize();
+                if(elapsed < total){
+                    let t = elapsed / durationIn;
+                    if(t > 1) t = 1;
+                    // Ease (smoothstep) for zoom-in
+                    const ease = t*t*(3 - 2*t);
+                    const startDist = 60;
+                    const targetDist = 22;
+                    let dist = startDist + (targetDist - startDist) * ease;
+                    // small bounce overshoot after main ease
+                    if(elapsed > durationIn){
+                        const post = (elapsed - durationIn) / (total - durationIn);
+                        // damped sine for subtle bounce
+                        dist = targetDist * (1 + 0.04 * Math.exp(-4*post) * Math.sin(post * Math.PI * 4));
+                    }
+                    camera.position.copy(dir.clone().multiplyScalar(dist));
+                    controls.target.copy(rootMarker.position);
+                    // Reveal panels 0.5s earlier than previous (trigger near end of bounce)
+                    if(!panelsRevealed && elapsed >= total - 500){
+                        document.body.classList.add('panels-show');
+                        panelsRevealed = true;
+                    }
+                } else {
+                    introAnimating = false;
+                    camera.position.copy(rootMarker.position.clone().normalize().multiplyScalar(22));
+                    // trigger panel reveal now (earlier than full recenter finish)
+                    if(!panelsRevealed){
+                        document.body.classList.add('panels-show');
+                        panelsRevealed = true;
+                    }
+                    // start smooth recenter of controls target back to globe center
+                    introRecentering = true;
+                    introRecenterStart = performance.now();
+                    introRootTarget = rootMarker.position.clone();
+                }
+            }
+
+            // Smoothly move orbit target from root marker back to globe center
+            if(introRecentering){
+                const t = (performance.now() - introRecenterStart) / 1800; // 1.8s
+                if(t >= 1){
+                    controls.target.set(0,0,0);
+                    introRecentering = false;
+                } else {
+                    // ease
+                    const e = t*t*(3-2*t);
+                    const blended = introRootTarget.clone().multiplyScalar(1 - e);
+                    controls.target.copy(blended);
+                }
+            }
+
+            // Typewriter style trail animation (draw -> hold -> fade -> restart)
+            const now = performance.now();
+            trails.forEach(tr => {
+                const { points, totalPoints, baseLine, glowLine, outerGlowLine, wideGlowLine, headLine, headSegments, startTime, cycleDuration, writeFrac, holdFrac, fadeFrac } = tr;
+                if(!points) return;
+                const elapsed = now - startTime;
+                if(elapsed < 0){ return; }
+                const cycleT = (elapsed % cycleDuration) / cycleDuration; // 0..1
+                const writeEnd = writeFrac;
+                const holdEnd = writeFrac + holdFrac;
+                const fadeEnd = writeFrac + holdFrac + fadeFrac; // should equal 1
+
+                let visibleCount = 0;
+                let phaseOpacity = 1;
+                if(cycleT <= writeEnd){
+                    // eased draw
+                    const nt = cycleT / writeEnd;
+                    const ease = 1 - Math.cos(nt * Math.PI * 0.5); // easeOutSine
+                    visibleCount = Math.max(2, Math.floor(ease * totalPoints));
+                    phaseOpacity = 1;
+                } else if(cycleT <= holdEnd){
+                    visibleCount = totalPoints;
+                    phaseOpacity = 1;
+                } else if(cycleT <= fadeEnd){
+                    visibleCount = totalPoints;
+                    const ft = (cycleT - holdEnd) / (fadeFrac);
+                    phaseOpacity = Math.max(0, 1 - Math.pow(ft, 1.4));
+                } else {
+                    // idle (if any leftover fraction); hide fully
+                    visibleCount = 0;
+                    phaseOpacity = 0;
+                }
+
+                // Update draw ranges
+                baseLine.geometry.setDrawRange(0, visibleCount);
+                glowLine.geometry.setDrawRange(0, visibleCount);
+                outerGlowLine.geometry.setDrawRange(0, visibleCount);
+                wideGlowLine.geometry.setDrawRange(0, visibleCount);
+
+                // Head segment: last portion (during write only)
+                const headPositionsAttr = headLine.geometry.getAttribute('position');
+                const headColorsAttr = headLine.geometry.getAttribute('color');
+                if(cycleT <= writeEnd && visibleCount > 1){
+                    headLine.visible = true;
+                    const headLen = Math.min(headSegments, visibleCount);
+                    const startIdx = Math.max(0, visibleCount - headLen);
+                    for(let i=0;i<headSegments;i++){
+                        const offset = i*3;
+                        if(i < headLen){
+                            const p = points[startIdx + i];
+                            headPositionsAttr.array[offset] = p.x;
+                            headPositionsAttr.array[offset+1] = p.y;
+                            headPositionsAttr.array[offset+2] = p.z;
+                            const g = i/(headLen-1 || 1);
+                            const col = TRAIL_BASE_COLOR.clone().lerp(TRAIL_TIP_COLOR, Math.pow(g,1.2));
+                            headColorsAttr.array[offset] = col.r;
+                            headColorsAttr.array[offset+1] = col.g;
+                            headColorsAttr.array[offset+2] = col.b;
+                        } else {
+                            headPositionsAttr.array[offset] = points[visibleCount-1].x;
+                            headPositionsAttr.array[offset+1] = points[visibleCount-1].y;
+                            headPositionsAttr.array[offset+2] = points[visibleCount-1].z;
+                            headColorsAttr.array[offset] = TRAIL_BASE_COLOR.r;
+                            headColorsAttr.array[offset+1] = TRAIL_BASE_COLOR.g;
+                            headColorsAttr.array[offset+2] = TRAIL_BASE_COLOR.b;
+                        }
+                    }
+                    headLine.geometry.setDrawRange(0, headLen);
+                    headPositionsAttr.needsUpdate = true;
+                    headColorsAttr.needsUpdate = true;
+                    headLine.material.opacity = 0.9 + 0.1*Math.sin(now/180 + totalPoints); // slight pulse
+                } else {
+                    headLine.visible = false;
+                }
+
+                // Opacity stack (phaseOpacity base plus additive intensities)
+                baseLine.material.opacity = 0.30 * phaseOpacity;
+                glowLine.material.opacity = 0.65 * phaseOpacity;
+                outerGlowLine.material.opacity = 0.30 * phaseOpacity;
+                wideGlowLine.material.opacity = 0.16 * phaseOpacity;
+            });
+
+            // Update analytics panel every frame (lightweight)
+            if (metricHover) metricHover.textContent = hovered ? `${hovered.userData.name} (${hovered.userData.alumni})` : '-';
+            if (metricAlumni) metricAlumni.textContent = capitalsData.reduce((s,c)=>s+(c.alumni||0),0).toString();
+            if (metricSelected && lastSelectedCapital) metricSelected.textContent = lastSelectedCapital.userData.name;
+
+            // FPS calculation (update once per 500ms)
+            // FPS metric removed
+
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+
+    init();
+    // Fallback: force reveal after 9s in case intro logic skipped
+    setTimeout(()=>{ if(!panelsRevealed){ document.body.classList.add('panels-show'); panelsRevealed = true; } }, 9000);
+    animate();
+    </script>
+</body>
+</html>
